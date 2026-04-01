@@ -1,6 +1,7 @@
 const express = require('express');
 
 const userRoutes = require('./routes/userRoutes')
+const taskRoutes = require('./routes/taskRoutes');
 require('./db');
 
 const port = 3000;
@@ -13,6 +14,7 @@ app.use(express.urlencoded({extennded: true}));
 
 //App Routes
 app.use('/users', userRoutes);
+app.use('/tasks', taskRoutes);
 //
 
 //global handler

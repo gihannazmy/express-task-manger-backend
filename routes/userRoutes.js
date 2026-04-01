@@ -5,9 +5,9 @@ const router = express.Router();
 
 
 const User = require('../models/user');
-const { signup } = require('../controllers/authControllers');
+const { signup } = require('../controllers/authController');
 
 
 router.post('/', signup)
 
-modules.exports = router;
+module.exports = router;
