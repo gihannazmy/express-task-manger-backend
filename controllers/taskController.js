@@ -9,7 +9,7 @@ const createTask = async (req, res, next) => {
     if (!title || !priority) {
         return next(new AppError('Insufficient info', 400));
     }
-    const taskCreated = await Task.create({title, priority, duedate})
+    const taskCreated = await Task.create({title, priority, duedate, user:req.user._id});
     res.status(201).json({
     status: 'success',
     data: taskCreated,
@@ -23,8 +23,11 @@ const createTask = async (req, res, next) => {
 
 const getTasks = async (req, res, next ) =>{
     try{
-        const tasks = await Task.find();
-        res.send(tasks);
+        const tasks = await Task.find({user: req.user._id});
+        res.status(200).json({
+            status : 'success',
+            data: tasks,
+        });
     }
         
     catch (err) {
@@ -35,14 +38,17 @@ const getTasks = async (req, res, next ) =>{
 const editTask = async (req, res, next) =>{
     try{
         const taskId = req.params.id;
-
-        const updatedTask = await Task.findByIdAndUpdate(taskId, req.body)
-        if(!updatedTask){
-            return res.status(404).json({message: 'Task can not be found'})
-        };
+        const task = await Task.findOne({_id:taskId, user: req.user._id})
+        if (!task) {
+        return next(new AppError('Task not found or not yours', 404));
+        }       
+            
+        
+        Object.assign(task, req.body);
+        await task.save();
         res.status(200).json({
             status: 'success',
-            data: updatedTask,
+            data: task,
         });
             
 
@@ -54,12 +60,12 @@ const editTask = async (req, res, next) =>{
 
 const deleteTask = async (req, res, next) =>{
         try{ 
-            task = await Task.findByIdAndDelete(req.params.id)
+            const task = await Task.findByIdAndDelete({_id:req.params.id, user:req.user._id})
             if (!task) {
-                return res.status(404).json({messge: 'Task can not be found'});
+                return res.status(404).json({status:'fail' ,messge: 'Task can not be found'});
 
             }
-            res.status(200).json({message: 'Task deleted successfully'}, task)
+            res.status(200).json({status: 'success',message: 'Task deleted successfully'})
     }
     catch (err) {
     next(err);
