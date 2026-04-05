@@ -17,7 +17,7 @@ const protect = async(req, res, next) =>{
     if(!token){
       return next(new AppError('You are not logged in!', 401));
     }
-    const decode = jwt.verify(token, process.env.JWT_SECERT);
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
     const currentUser = await User.findById(decode.id);
     if(!currentUser){
       return next(new AppError('The user no longer exists.', 401));

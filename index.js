@@ -3,11 +3,12 @@ const express = require('express');
 
 const userRoutes = require('./routes/userRoutes')
 const taskRoutes = require('./routes/taskRoutes');
+
 const AppError = require('./utils/AppError');
 const protect = require('./middleware/auth')
 require('./db');
 
-const port = 3000;
+const port = 8000;
 const app = express();
 
 // middleware
@@ -17,7 +18,7 @@ app.use(express.urlencoded({extended: true}));
 
 //App Routes
 app.use('/users', userRoutes);
-app.use('/tasks',protect, taskRoutes);
+app.use('/tasks', taskRoutes);
 //
 
 //global handler

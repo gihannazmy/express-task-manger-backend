@@ -1,19 +1,18 @@
 const express = require('express');
 const router = express.Router();
 
+const User = require('../models/task');
+const {createTask, updateTask, deleteTask, getAllUserTask} = require('../controllers/taskController');
+const protect = require('../middleware/auth');
 
-const Task = require('../models/task');
-const {createTask, getTasks, deleteTask, editTask} = require('../controllers/taskController')
 
 
-//to get all tasks
-router.get('/', getTasks);
-//to add a new task
-router.post('/', createTask)
-//to edit a specidic task
-router.put('/:id', editTask)
-// to delete a specific task
-router.delete('/:id', deleteTask)
+// Use the protect middleware
+router.use(protect);
+router.post('/create-task', createTask);
+router.delete('/:id', deleteTask);
+router.put('/:id', updateTask);
+router.get('/all', getAllUserTask);
 
 
 module.exports = router;

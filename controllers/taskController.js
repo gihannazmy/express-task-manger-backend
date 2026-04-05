@@ -2,80 +2,99 @@ const Task = require('../models/task');
 const AppError = require('../utils/AppError');
 
 
-
-const createTask = async (req, res, next) => {
-    try {
-    const {title, priority, duedate} = req.body;
-    if (!title || !priority) {
-        return next(new AppError('Insufficient info', 400));
-    }
-    const taskCreated = await Task.create({title, priority, duedate, user:req.user._id});
-    res.status(201).json({
-    status: 'success',
-    data: taskCreated,
-    });
-   
-    }
-    catch (err) {
-    next(err);
-  }
-};
-
-const getTasks = async (req, res, next ) =>{
+const createTask = async(req,res, next) =>{
     try{
-        const tasks = await Task.find({user: req.user._id});
-        res.status(200).json({
-            status : 'success',
-            data: tasks,
+        const {title, priority, dueDate, } = req.body;
+        if(!title) {
+            return next(new AppError('No Title', 400));
+        }
+        const taskCreated = await Task.create({title, priority, dueDate, user: req.user.id });
+        res.status(201).json({
+            status: 'success',
+            date: taskCreated,
         });
     }
-        
-    catch (err) {
-    next(err);
-  }
+    catch(err){
+        next(err)
+    }
 }
-
-const editTask = async (req, res, next) =>{
+const getAllUserTask = async (req, res, next) =>{
     try{
-        const taskId = req.params.id;
-        const task = await Task.findOne({_id:taskId, user: req.user._id})
-        if (!task) {
-        return next(new AppError('Task not found or not yours', 404));
-        }       
-            
-        
-        Object.assign(task, req.body);
-        await task.save();
+        tasks = await Task.find({ user: req.user.id});
         res.status(200).json({
             status: 'success',
-            data: task,
+            data: {tasks}
         });
-            
+
+
+    }catch (err){
+        next(err);
+    };
+}
+const updateTask = async(req, res, next) =>{
+    try{
+        const taskId = req.params.id;
+        const allowedUpdates = ['title', 'priority', 'dueDate'];
+        const updates = {};
+        Object.keys(req.body).forEach(key => {
+            if (allowedUpdates.includes(key)) {
+                updates[key] = req.body[key];
+            }
+        });
+        const updatedTask = await Task.findByIdAndUpdate(
+            {
+                _id: taskId,
+                user: req.user.id
+            },
+            updates,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+        if(!updatedTask){
+            return next(new AppError('No task found', 404));
+        }
+        res.status(200).json({
+            status: 'success',
+            data: {
+                task: updatedTask
+            }
+        });
+
 
     } catch (err) {
-     next(err);
-
+        next(err);
     }
-}
+};
 
-const deleteTask = async (req, res, next) =>{
-        try{ 
-            const task = await Task.findByIdAndDelete({_id:req.params.id, user:req.user._id})
-            if (!task) {
-                return res.status(404).json({status:'fail' ,messge: 'Task can not be found'});
+const deleteTask = async(req, res, next) =>
+{
+    try{
+        const taskId = req.params.id;
+        const deletedTask = await Task.findOneAndDelete({
+            _id:taskId,
+            user: req.user.id
+        });
+        if(!deletedTask) {
+            return next(new AppError('No task found with that ID', 404));
+        }
+        res.status(204).json({
+            status: 'success',
+            data: null
+        });
 
-            }
-            res.status(200).json({status: 'success',message: 'Task deleted successfully'})
+
+    } catch(err){
+        next(err);
     }
-    catch (err) {
-    next(err);
+};
 
-    }
-}
+
 
 module.exports = {
     createTask,
-    getTasks,
     deleteTask,
-    editTask
+    updateTask,
+    getAllUserTask,
 }

@@ -73,13 +73,41 @@ const login = async (req, res, next)=>{
     });
 
   }
+    
 
 
    catch (err) {
     next(err);
   }
-
 }
+
+
+
+
+
+
+
+
+
+// for testing only
+  const getAllusers = async (req, res, next) => {
+    try{
+      const users = await User.find()
+      res.status(200).json({
+        status: 'success',
+        users
+      })
+    }
+    
+    catch (err) {
+    next(err);
+  }
+    }
+
+
+
 module.exports = {
   signup,
-  login,};
+  login,
+getAllusers,
+};
